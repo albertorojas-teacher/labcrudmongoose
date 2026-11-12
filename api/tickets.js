@@ -90,7 +90,7 @@ export default async function handler(req, res) {
         { new: true, runValidators: true },
       );
       if (!ticketModificado) {
-        return res.status(400).json({ error: "Ticket no encontrado" });
+        return res.status(404).json({ error: "Ticket no encontrado" });
       }
 
       return res.status(200).json({
