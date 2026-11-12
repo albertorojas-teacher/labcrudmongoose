@@ -17,10 +17,11 @@ export default async function handler(req, res) {
     // req.query contiene los parametros de la URL
 
     if (method === "GET") {
-      const { prioridad, estado, buscar, sinAsignar } = req.query;
+      const { codigo, prioridad, estado, buscar, sinAsignar } = req.query;
       const filtro = {};
 
       // Este if es un ejemplo de un if de una sola instrucion
+      if (codigo) filtro.codigo = codigo;
       if (prioridad) filtro.prioridad = prioridad;
       if (estado) filtro.estado = estado;
       if (buscar) {
