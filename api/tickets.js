@@ -52,6 +52,53 @@ export default async function handler(req, res) {
         ticket: nuevoTicket,
       });
     }
+
+    // 3.- PATCH (UPDATE): Actualizar estado, agente o sumar horas por codigo (?codigo=BUG-101)
+    if (method === "PATCH") {
+      // PATCH modifica parte del recurso, a diferencia de reemplazarlo completo (put)
+      // El identificador se recibe mediante la url y los cambios los hacemos por el body
+      const { codigo } = req.query;
+      const { estado, agenteAsignado, sumarHoras, nuevaEtiqueta } = req.body;
+
+      // Sin codigo no se puede saber que ticket acutalizar, osea valida
+
+      if (!codigo) {
+        return res
+          .status(400)
+          .json({ error: "Debes indicar el codigo ?codigo=BUG-XXX en la url" });
+      }
+
+      // Los operadores de actulizacion expresan que cambios hacer sin sustituir el documento entero: $set
+      // ya que el set asigna campos
+      const actualizacion = { $set: {} };
+
+      // En algunos if, omitimos las llaves porque controla una unica asignacion
+      if (estado) actualizacion.$set.estado = estado;
+      if (agenteAsignado) actualizacion.$set.agenteAsignado = agenteAsignado;
+      // sumarHoras llega desde el cuerpo de la peticion, Number lo convierte en numero
+      // usamos $inc para incrementar el valor en la base de datos
+      if (sumarHoras)
+        actualizacion.$inc = { horasInvertidas: Number(sumarHoras) };
+
+      // push añade un elemento al final del array
+      if (nuevaEtiqueta) actualizacion.$push = { etiquetas: nuevaEtiqueta };
+
+      const ticketModificado = await Ticket.findOneAndUpdate(
+        { codigo: codigo.toUpperCase() },
+        actualizacion,
+        // new devuelve el documento acutlizado, runValidators vuelve a aplivar las validaciones del Shema
+        { new: true, runValidators: true },
+      );
+      if (!ticketModificado) {
+        return res.status(400).json({ error: "Ticket no encontrado" });
+      }
+
+      return res.status(200).json({
+        mensaje: "Ticket actualizado con exito",
+        ticket: ticketModificado,
+      });
+    }
+
     return res.status(405).json({ error: `Metodo ${method} no permitido` });
   } catch (error) {}
 }
