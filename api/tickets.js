@@ -41,5 +41,17 @@ export default async function handler(req, res) {
       const tickets = await Ticket.find(filtro).sort({ createdAt: -1 });
       return res.status(200).json({ total: tickets.length, datos: tickets });
     }
+
+    // 2.- POST
+    if (method === "POST") {
+      // req.body contiene los datos enviados por nosotros o cliente(normalmente en JSON)
+      // create valida y guarda el nuevo documento
+      const nuevoTicket = await Ticket.create(req.body);
+      return res.status(201).json({
+        mensaje: "Ticket nuevo creado con exito",
+        ticket: nuevoTicket,
+      });
+    }
+    return res.status(405).json({ error: `Metodo ${method} no permitido` });
   } catch (error) {}
 }
