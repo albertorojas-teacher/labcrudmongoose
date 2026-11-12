@@ -99,6 +99,29 @@ export default async function handler(req, res) {
       });
     }
 
+    if (method === "DELETE") {
+      const { codigo } = req.query;
+      if (!codigo) {
+        return res.status(400).json({
+          error:
+            "Debes indicar el codigo ?codigo=BUG-XXX en la url el cual quieres borrar",
+        });
+      }
+
+      const eliminado = await Ticket.findOneAndDelete({
+        codigo: codigo.toUpperCase(),
+      });
+
+      if (!eliminado) {
+        return res.status(404).json({ error: "Ticket no eliminado" });
+      }
+
+      return res.status(200).json({
+        mensaje: "Ticket eliminado con exito",
+        ticket: ticketModificado,
+      });
+    }
+
     return res.status(405).json({ error: `Metodo ${method} no permitido` });
   } catch (error) {}
 }
